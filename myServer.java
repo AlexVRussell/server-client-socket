@@ -25,6 +25,14 @@ public class myServer {
         } 
     }
 
+
+    /**
+     * Takes in client input and formats it for display on the server console.
+     *
+     * @param clientIn
+     * @param clientIP
+     * @param clientPort
+     */
     private void handleClientInput(BufferedReader clientIn, String clientIP, int clientPort) {
         String inLine;
 

@@ -14,6 +14,13 @@ public class myClient {
         }
     }
 
+    /**
+     * Handles user input from the console and sends it to the server.
+     *
+     * @param scanner
+     * @param writer
+     */
+
     private void handleUserInput(Scanner scanner, PrintWriter writer){
         String inputLine;
         System.out.println("Enter a message to send to the server. Or type 'exit' to quit:");
