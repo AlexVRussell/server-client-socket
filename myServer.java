@@ -11,42 +11,48 @@ public class myServer {
             System.out.println("Server listening on port " + portNumber);
 
             // wait for a client to connect
-            Socket clientSocket = serverSocket.accept();
-            if (clientSocket != null) {
-                System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                if (clientSocket != null) {
+                    System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
+                }
+
+                new Thread(new clientHandler(clientSocket)).start();
             }
-
-            String clientIP = clientSocket.getInetAddress().getHostAddress();  
-            int clientPort = clientSocket.getPort();
-
-            handleClientInput(new BufferedReader((new InputStreamReader(clientSocket.getInputStream()))), clientIP, clientPort);
         } catch (IOException e) {
             throw new RuntimeException(e); 
         } 
     }
+    private static class clientHandler implements Runnable {
+        private final Socket clientSocket;
 
+        public clientHandler (Socket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
 
-    /**
-     * Takes in client input and formats it for display on the server console.
-     *
-     * @param clientIn
-     * @param clientIP
-     * @param clientPort
-     */
-    private void handleClientInput(BufferedReader clientIn, String clientIP, int clientPort) {
-        String inLine;
+        @Override
+        public void run() {
 
-        while (true) {
-            try {
-                if ((inLine = clientIn.readLine()) == null) {
-                    break;
-                } else if (inLine.equalsIgnoreCase("exit")) {
-                    break;
+            try (BufferedReader clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                String clientIP = clientSocket.getInetAddress().getHostAddress();
+                int clientPort = clientSocket.getPort();
+                String inLine;
+
+                while ((inLine = clientIn.readLine()) != null) {
+                    if (inLine.equalsIgnoreCase("exit")){
+                        break;
+                    }
+                    System.out.println(String.format("%s:%d:%s ", clientIP, clientPort, inLine));
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.err.println("Error handling client: " + e.getMessage());
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    System.err.println("Error: " + e.getMessage());
+                }
             }
-            System.out.println(String.format("%s:%d:%s ", clientIP, clientPort, inLine));
         }
     }
 }
